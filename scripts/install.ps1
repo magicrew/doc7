@@ -27,6 +27,19 @@ function Get-RequestHeaders {
     return $headers
 }
 
+function Test-ChineseInstallLanguage {
+    $preference = if (-not [string]::IsNullOrWhiteSpace($env:DOC7_LANG)) {
+        $env:DOC7_LANG
+    }
+    else {
+        [Globalization.CultureInfo]::CurrentUICulture.Name
+    }
+
+    return $preference -match '^zh(?:[-_]|$)'
+}
+
+$useChinese = Test-ChineseInstallLanguage
+
 if ($env:OS -ne "Windows_NT") {
     Stop-Install "this installer supports Windows only"
 }
@@ -92,7 +105,12 @@ $extractDir = Join-Path $tempDir "extract"
 try {
     New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
 
-    Write-Host "Downloading doc7 $Version for Windows/$Architecture..."
+    if ($useChinese) {
+        Write-Host "正在下载 doc7 $Version（Windows/$Architecture）……"
+    }
+    else {
+        Write-Host "Downloading doc7 $Version for Windows/$Architecture..."
+    }
     $archiveRequest = @{
         Uri = "$releaseUrl/$assetName"
         Headers = $headers
@@ -169,10 +187,23 @@ try {
     }
 
     $env:Path = "$normalizedInstallDir;$($env:Path)"
-    & (Join-Path $normalizedInstallDir "doc7.exe") version
-    Write-Host "Installed directory: $normalizedInstallDir"
-    Write-Host "Next: doc7 setup"
-    Write-Host "Then: doc7 <file>"
+    $installedExecutable = Join-Path $normalizedInstallDir "doc7.exe"
+    & $installedExecutable version | Out-Null
+
+    if ($useChinese) {
+        Write-Host "doc7 已安装：$installedExecutable"
+        Write-Host ""
+        Write-Host "安装完成。下面是 doc7 的使用说明："
+        Write-Host ""
+    }
+    else {
+        Write-Host "Installed executable: $installedExecutable"
+        Write-Host ""
+        Write-Host "Installation complete. Here is how to use doc7:"
+        Write-Host ""
+    }
+
+    & $installedExecutable
 }
 finally {
     if (Test-Path -LiteralPath $tempDir) {

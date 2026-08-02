@@ -2,6 +2,25 @@
 
 set -euo pipefail
 
+detect_install_language() {
+  local preference
+
+  preference="${DOC7_LANG:-}"
+  if [[ -z "${preference}" ]] && [[ "$(uname -s)" == "Darwin" ]] && command -v defaults >/dev/null 2>&1; then
+    preference="$(defaults read -g AppleLanguages 2>/dev/null | awk -F'"' 'NF >= 2 { print $2; exit }' || true)"
+  fi
+  if [[ -z "${preference}" ]]; then
+    preference="${LC_ALL:-${LC_MESSAGES:-${LANG:-}}}"
+  fi
+
+  case "${preference}" in
+    [zZ][hH] | [zZ][hH][-_]*) printf 'zh-CN\n' ;;
+    *) printf 'en\n' ;;
+  esac
+}
+
+INSTALL_LANGUAGE="$(detect_install_language)"
+
 fail() {
   printf 'doc7 installer: %s\n' "$*" >&2
   exit 1
@@ -114,7 +133,11 @@ cleanup() {
 }
 trap cleanup EXIT
 
-printf 'Downloading doc7 %s for %s/%s...\n' "${VERSION}" "${OS}" "${ARCH}"
+if [[ "${INSTALL_LANGUAGE}" == "zh-CN" ]]; then
+  printf '正在下载 doc7 %s（%s/%s）……\n' "${VERSION}" "${OS}" "${ARCH}"
+else
+  printf 'Downloading doc7 %s for %s/%s...\n' "${VERSION}" "${OS}" "${ARCH}"
+fi
 curl --fail --silent --show-error --location \
   --output "${ARCHIVE_PATH}" "${RELEASE_URL}/${ASSET_NAME}"
 curl --fail --silent --show-error --location \
@@ -138,16 +161,28 @@ if [[ -f "${README_PATH}" ]]; then
   install -m 0644 "${README_PATH}" "${SHARE_DIR}/README.txt"
 fi
 
-"${INSTALL_DIR}/doc7" version
-printf 'Installed executable: %s\n' "${INSTALL_DIR}/doc7"
+"${INSTALL_DIR}/doc7" version >/dev/null
+if [[ "${INSTALL_LANGUAGE}" == "zh-CN" ]]; then
+  printf 'doc7 已安装：%s\n' "${INSTALL_DIR}/doc7"
+else
+  printf 'Installed executable: %s\n' "${INSTALL_DIR}/doc7"
+fi
 
 case ":${PATH}:" in
   *":${INSTALL_DIR}:"*) ;;
   *)
-    printf 'Add this directory to PATH before opening a new shell:\n'
+    if [[ "${INSTALL_LANGUAGE}" == "zh-CN" ]]; then
+      printf '请把这个目录加入 PATH，然后重新打开终端：\n'
+    else
+      printf 'Add this directory to PATH before opening a new shell:\n'
+    fi
     printf '  export PATH="%s:$PATH"\n' "${INSTALL_DIR}"
     ;;
 esac
 
-printf 'Next: doc7 setup\n'
-printf 'Then: doc7 <file>\n'
+if [[ "${INSTALL_LANGUAGE}" == "zh-CN" ]]; then
+  printf '\n安装完成。下面是 doc7 的使用说明：\n\n'
+else
+  printf '\nInstallation complete. Here is how to use doc7:\n\n'
+fi
+"${INSTALL_DIR}/doc7"

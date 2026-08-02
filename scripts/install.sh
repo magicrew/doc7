@@ -73,6 +73,12 @@ verify_checksum() {
   [[ "${actual}" == "${expected}" ]] || fail "checksum verification failed"
 }
 
+clear_macos_quarantine() {
+  [[ "${OS}" == "darwin" ]] || return 0
+  command -v xattr >/dev/null 2>&1 || return 0
+  xattr -dr com.apple.quarantine "${TEMP_DIR}" 2>/dev/null || true
+}
+
 require_command curl
 require_command tar
 require_command awk
@@ -116,6 +122,7 @@ curl --fail --silent --show-error --location \
 
 verify_checksum
 tar -xzf "${ARCHIVE_PATH}" -C "${TEMP_DIR}"
+clear_macos_quarantine
 
 BINARY_PATH="${TEMP_DIR}/${PACKAGE_NAME}/doc7"
 LICENSE_PATH="${TEMP_DIR}/${PACKAGE_NAME}/LICENSE"

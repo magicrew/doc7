@@ -32,6 +32,18 @@ Windows PowerShell：
 irm https://raw.githubusercontent.com/magicrew/doc7/main/scripts/install.ps1 | iex
 ```
 
+macOS 推荐使用上面的安装脚本。它会下载并校验发行包，然后安装到当前用户目录，
+不需要管理员权限，也不要求 Apple Developer ID。直接用浏览器下载并打开二进制文件
+是另一条路径：macOS 可能会给文件添加隔离属性。若选择直接下载压缩包，请在终端
+解压后执行发行包中对应的命令：
+
+```bash
+xattr -dr com.apple.quarantine <解压后的目录>
+```
+
+这只会移除当前下载文件的本地隔离属性，不等同于 Apple 签名或公证。正式的 Developer
+ID 签名和公证需要 Apple Developer Program 账号，后续可以为正式发行通道接入。
+
 启动 LM Studio 或 Ollama，加载一个本地视觉模型，然后直接转换文件：
 
 ```bash

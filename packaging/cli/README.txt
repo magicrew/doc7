@@ -8,6 +8,15 @@ Turn any document into AI-ready Markdown.
 3. Run: doc7 setup
 4. Convert: doc7 <file>
 
+macOS note:
+  The curl installer is the recommended path because it verifies the release and installs
+  under the current user. If you downloaded and extracted this archive in a browser and
+  macOS blocks the executable, run this from Terminal after extraction:
+
+  xattr -dr com.apple.quarantine <extracted-directory>
+
+  This clears the local browser quarantine. It is not a Developer ID signature or notarization.
+
 Examples:
   doc7 report.pdf
   doc7 screenshot.png

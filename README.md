@@ -32,6 +32,21 @@ Windows PowerShell:
 irm https://raw.githubusercontent.com/magicrew/doc7/main/scripts/install.ps1 | iex
 ```
 
+The installer is the recommended macOS path. It downloads a checksum-verified
+release and installs it under your user directory, so it does not require an
+administrator account or an Apple Developer ID. Directly opening a binary
+downloaded by a browser is different: macOS may attach a quarantine attribute
+to that file. If you choose the archive path, run the included command from
+Terminal after extracting it:
+
+```bash
+xattr -dr com.apple.quarantine <extracted-directory>
+```
+
+This removes the local download quarantine; it is not Apple signing or
+notarization. Official Developer ID signing and notarization require an Apple
+Developer Program account and are planned for a future signed release channel.
+
 Start LM Studio or Ollama, load a local vision model, and convert a file:
 
 ```bash

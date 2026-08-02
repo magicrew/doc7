@@ -76,10 +76,13 @@ jobs:
       packages: write
 
     steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
       - name: Remove untagged package versions
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: doc7
-          package-type: container
-          min-versions-to-keep: 10
-          delete-only-untagged-versions: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_OWNER: magicrew
+          PACKAGE_NAME: doc7
+          PACKAGE_TYPE: container
+        run: bash scripts/cleanup-untagged-package-versions.sh

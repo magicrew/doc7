@@ -128,7 +128,7 @@ try {
     Invoke-WebRequest @checksumsRequest
 
     $escapedAssetName = [Regex]::Escape($assetName)
-    $checksumPattern = '^([0-9A-Fa-f]{64})\s+\*?(?:\./)?{0}$' -f $escapedAssetName
+    $checksumPattern = '^([0-9A-Fa-f]{64})\s+\*?(?:\./)?' + $escapedAssetName + '$'
     [string]$expectedChecksum = ""
 
     foreach ($line in Get-Content -LiteralPath $checksumsPath) {
